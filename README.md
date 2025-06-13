@@ -1,143 +1,126 @@
-# Hardware File Auto-Download Tool
+# Auto Binwalk
 
-This Python project is designed to automatically download and extract hardware firmware files based on information from an Excel file.
+An automated tool for downloading firmware, performing binwalk analysis, and conducting AI-powered security reviews.
 
 ## Features
 
-- 📖 Read hardware list and download links from an Excel file
-- 📥 Automatically download zip files to a specified directory
-- 📦 Automatically extract downloaded files
-- 🎯 **Keep only .bin files, automatically delete all other files and folders**
-- 🗑️ Automatically delete zip archives after extraction
-- 📊 Real-time download progress display
-- 📝 Comprehensive logging
-- 🔄 Error handling and retry mechanism
+### 1. Firmware Download
+- Support for multiple firmware download sources
+- Automatic firmware version detection
+- Parallel download capability
+- Download progress tracking
+- Automatic retry mechanism
+- Support for different download protocols (HTTP/HTTPS/FTP)
+
+### 2. Binwalk Analysis
+- Automatic firmware extraction and analysis
+- Support for multiple file formats
+- Detailed analysis report generation
+- Extraction of embedded files and file systems
+- Identification of file signatures and magic numbers
+- Support for entropy analysis
+
+### 3. AI Security Review
+- Automated security analysis of firmware
+- Identification of potential security vulnerabilities
+- Analysis of file system structure
+- Detection of sensitive information
+- Generation of comprehensive security reports
+- Integration with OpenAI's GPT models for intelligent analysis
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/auto-binwalk.git
+cd auto-binwalk
+
+# Install dependencies
+pip install -e .
+```
+
+## Usage
+
+### 1. Download Firmware
+```bash
+# Download firmware from a specific URL
+python run_download.py --url "https://example.com/firmware.bin"
+
+# Download firmware with specific version
+python run_download.py --url "https://example.com/firmware.bin" --version "1.0.0"
+
+# Download firmware with custom output directory
+python run_download.py --url "https://example.com/firmware.bin" --output-dir "./firmware"
+```
+
+### 2. Run Binwalk Analysis
+```bash
+# Analyze a firmware file
+python run_binwalk_api.py --firmware "path/to/firmware.bin"
+
+# Analyze with specific options
+python run_binwalk_api.py --firmware "path/to/firmware.bin" --extract --entropy
+
+# Analyze and save results
+python run_binwalk_api.py --firmware "path/to/firmware.bin" --output "analysis_results.json"
+```
+
+### 3. Perform AI Security Review
+```bash
+# Review firmware analysis results
+python run_binwalk_api.py --firmware "path/to/firmware.bin" --review
+
+# Review with specific AI model
+python run_binwalk_api.py --firmware "path/to/firmware.bin" --review --model "gpt-4"
+
+# Review and save report
+python run_binwalk_api.py --firmware "path/to/firmware.bin" --review --output "security_report.json"
+```
+
+## Configuration
+
+The tool can be configured through environment variables or a configuration file:
+
+```bash
+# Environment variables
+export OPENAI_API_KEY="your-api-key"
+export DOWNLOAD_TIMEOUT=300
+export MAX_RETRIES=3
+```
 
 ## Project Structure
 
 ```
 auto-binwalk/
-├── src/                        # Source code directory
-│   └── download_hardware.py    # Main program
-├── test/                       # Test files directory
-│   ├── download_test.py        # Test script (processes only first 3 files)
-│   └── test_setup.py           # Project configuration test
-├── log/                        # Log files directory
-│   ├── download.log            # Main program log
-│   └── download_test.log       # Test script log
-├── database/                   # Data directory
-│   ├── hardware.xlsx           # Hardware info Excel file
-│   ├── [hardware_name].bin     # Extracted .bin files (named by keyword)
-│   └── [hardware_name]_2.bin   # If multiple .bin files, add numbering
-├── run_download.py             # Main program runner script
-├── run_test.py                 # Test runner script
-├── run_setup_test.py           # Configuration test runner script
-├── requirements.txt            # Dependency list
-└── README.md                   # Project documentation
+├── src/
+│   ├── download_hardware.py      # Firmware download module
+│   ├── binwalk_api_analyzer.py   # Binwalk analysis module
+│   └── binwalk_review_analyzer.py # AI review module
+├── test/
+│   └── test_setup.py            # Test cases
+├── run_download.py              # Download script
+├── run_binwalk_api.py          # Analysis script
+└── setup.py                    # Installation script
 ```
-
-## Excel File Format
-
-The `database/hardware.xlsx` file should contain at least two columns:
-
-| Column Name   | Description      | Example                        |
-|--------------|------------------|--------------------------------|
-| keyword      | Hardware name    | Archer C50 V3                  |
-| Download Link| Download URL     | https://static.tp-link.com/.../firmware.zip |
-
-**Note:** The program will automatically detect the column structure and supports both 2-column and 3-column formats.
-
-## Installation & Usage
-
-### 1. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-Or, in a virtual environment:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# or .venv\Scripts\activate  # Windows
-pip install -r requirements.txt
-```
-
-### 2. Prepare the Excel File
-
-Make sure the `database/hardware.xlsx` file exists and contains the correct hardware information and download links.
-
-### 3. Run the Program
-
-**Configuration Test (recommended for first run):**
-```bash
-python3 run_setup_test.py
-```
-
-**Test Download (downloads only the first 3 files):**
-```bash
-python3 run_test.py
-```
-
-**Full Download (processes all files):**
-```bash
-python3 run_download.py
-```
-
-## Workflow
-
-1. **Read Excel File:** Read hardware info from `database/hardware.xlsx`
-2. **Validate Data:** Check the integrity of each row
-3. **Download Files:** Download the corresponding zip file for each hardware
-4. **Extract Files:** Automatically extract to a temporary folder
-5. **Extract .bin Files:** Find and move all .bin files to the database directory
-6. **Cleanup:** Delete the original zip archive and temporary folders, keep only .bin files
-7. **Logging:** All operations are logged in the log directory
-
-## Output
-
-- Each hardware's .bin file is saved directly in the `database/` directory
-- .bin files are named by keyword (e.g., `Archer_C50_V3.bin`)
-- If a zip contains multiple .bin files, numbering is added to distinguish them
-- Download progress and results are displayed in the terminal
-- Detailed logs are saved in the `log/` directory
-- **All non-.bin files are automatically deleted**
-
-## Error Handling
-
-The program includes robust error handling:
-
-- **Network Errors:** Automatically skip files that cannot be downloaded
-- **File Format Errors:** Handle non-zip or corrupted files
-- **Data Validation:** Skip rows missing keyword or download link
-- **File System Errors:** Handle permission and disk space issues
-
-## Notes
-
-- Ensure you have enough disk space for the downloaded files
-- A stable network connection is recommended; large files may take longer to download
-- The program adds a delay between requests to avoid overloading servers
-- If the download is interrupted, you can safely rerun the program
-
-## Log Files
-
-Log files are saved in the `log/` directory:
-- `download.log` - Main program log
-- `download_test.log` - Test script log
-
-Log contents include:
-- Download start and finish times
-- Download progress for each file
-- Detailed extraction information
-- Errors and warnings
 
 ## Dependencies
 
-- **pandas:** For reading and processing Excel files
-- **requests:** For HTTP downloads
-- **openpyxl:** Backend engine for pandas to read Excel files
+- Python 3.8+
+- binwalk
+- requests
+- openai
+- tqdm
+- colorama
+- python-dotenv
 
 ## License
 
-This project is open-sourced under the MIT License.
+MIT License
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
